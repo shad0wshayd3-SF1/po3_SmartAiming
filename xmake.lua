@@ -5,7 +5,7 @@ set_xmakever("2.9.4")
 includes("extern/commonlibsf")
 
 -- set project
-set_project("@ProjectName@")
+set_project("po3_SmartAiming")
 set_version("1.0.0")
 set_license("GPL-3.0")
 
@@ -24,14 +24,14 @@ add_rules("mode.debug", "mode.releasedbg")
 add_rules("plugin.vsxmake.autoupdate")
 
 -- setup targets
-target("@ProjectName@")
+target("po3_SmartAiming")
     -- bind local dependencies
     add_deps("commonlibsf")
 
     -- add commonlibsf plugin
     add_rules("commonlibsf.plugin", {
-        name = "@ProjectName@",
-        author = "@PluginAuthor@"
+        name = "po3_SmartAiming",
+        author = "shad0wshayd3-SF1"
     })
 
     -- add source files
