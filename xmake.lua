@@ -4,9 +4,12 @@ set_xmakever("2.9.4")
 -- include local folders
 includes("extern/commonlibsf")
 
+-- add custom package repository
+add_repositories("xre https://github.com/shad0wshayd3/custom-xrepo")
+
 -- set project
 set_project("po3_SmartAiming")
-set_version("1.0.0")
+set_version("2.0.0")
 set_license("GPL-3.0")
 
 -- set defaults
@@ -23,15 +26,21 @@ set_policy("build.optimization.lto", true)
 add_rules("mode.debug", "mode.releasedbg")
 add_rules("plugin.vsxmake.autoupdate")
 
+-- require package dependencies
+add_requires("figcone", {configs = {use_ini = true}})
+
 -- setup targets
 target("po3_SmartAiming")
     -- bind local dependencies
     add_deps("commonlibsf")
 
+    -- bind package dependencies
+    add_packages("figcone")
+
     -- add commonlibsf plugin
     add_rules("commonlibsf.plugin", {
         name = "po3_SmartAiming",
-        author = "shad0wshayd3-SF1"
+        author = "shad0wshayd3"
     })
 
     -- add source files
