@@ -9,7 +9,7 @@ add_repositories("xre https://github.com/shad0wshayd3/custom-xrepo")
 
 -- set project
 set_project("po3_SmartAiming")
-set_version("2.0.0")
+set_version("2.1.0")
 set_license("GPL-3.0")
 
 -- set defaults
