@@ -1,40 +1,21 @@
-class Config
+namespace Config
 {
-public:
-	class SectionSettings
+	namespace Settings
 	{
-	public:
-		bool bSwitchOnDraw{ false };
-		bool bSwitchOnAim{ true };
-		bool bRememberLastCameraState{ true };
-	};
-
-	// members
-	SectionSettings Settings;
-
-public:
-	static Config* GetSingleton()
-	{
-		static Config singleton;
-		return std::addressof(singleton);
+		static REX::INI::Bool bSwitchOnDraw{ "Settings", "bSwitchOnDraw", false };
+		static REX::INI::Bool bSwitchOnAim{ "Settings", "bSwitchOnAim", true };
+		static REX::INI::Bool bRememberLastCameraState{ "Settings", "bRememberLastCameraState", true };
 	}
 
 	static void Load()
 	{
-		const auto plugin = SFSE::PluginVersionData::GetSingleton();
-		auto config = std::filesystem::current_path() /=
-			std::format("Data/SFSE/plugins/{}.ini"sv, plugin->GetPluginName());
-		try
-		{
-			auto reader = figcone::ConfigReader{};
-			*GetSingleton() = reader.readIniFile<Config>(config.make_preferred());
-		}
-		catch (const std::exception& e)
-		{
-			SFSE::log::error("{}"sv, e.what());
-		}
+		const auto ini = REX::INI::SettingStore::GetSingleton();
+		ini->Init(
+			"Data/SFSE/plugins/po3_SmartAiming.ini",
+			"Data/SFSE/plugins/po3_SmartAimingCustom.ini");
+		ini->Load();
 	}
-};
+}
 
 namespace Handler
 {
@@ -60,7 +41,7 @@ namespace Handler
 		static void TrySetThirdPerson(const RE::CameraState a_lastCameraState)
 		{
 			if (RE::PlayerCamera::GetSingleton()->IsInFirstPerson() &&
-			    (!Config::GetSingleton()->Settings.bRememberLastCameraState || a_lastCameraState == RE::CameraState::kThirdPerson))
+			    (!Config::Settings::bRememberLastCameraState.GetValue() || a_lastCameraState == RE::CameraState::kThirdPerson))
 			{
 				RE::PlayerCamera::GetSingleton()->ForceThirdPerson();
 			}
@@ -69,7 +50,6 @@ namespace Handler
 
 	struct WeaponDraw
 	{
-	public:
 		static bool thunk(std::uintptr_t a_handler, RE::Actor* a_actor, const RE::BSFixedString& a_tag)
 		{
 			const auto result = func(a_handler, a_actor, a_tag);
@@ -81,12 +61,11 @@ namespace Handler
 		}
 
 		inline static REL::Relocation<decltype(thunk)> func;
-		inline static std::uintptr_t address{ REL::Relocation<std::uintptr_t>(REL::ID(155299), 0x2C).address() };
+		inline static REL::Relocation address{ REL::ID(155299), 0x2C };
 	};
 
 	struct WeaponSheathe
 	{
-	public:
 		static bool thunk(std::uintptr_t a_handler, RE::Actor* a_actor, const RE::BSFixedString& a_tag)
 		{
 			const auto result = func(a_handler, a_actor, a_tag);
@@ -98,12 +77,11 @@ namespace Handler
 		}
 
 		inline static REL::Relocation<decltype(thunk)> func;
-		inline static std::size_t idx{ 0x1 };
+		inline static std::size_t idx{ 0x01 };
 	};
 
 	struct EnterIronSights
 	{
-	public:
 		static bool thunk(RE::PlayerCamera* a_camera, std::uint32_t a_state)
 		{
 			const auto result = func(a_camera, a_state);
@@ -115,12 +93,11 @@ namespace Handler
 		}
 
 		inline static REL::Relocation<decltype(thunk)> func;
-		inline static std::uintptr_t address{ REL::Relocation<std::uintptr_t>(REL::ID(153910), 0x128).address() };
+		inline static REL::Relocation address{ REL::ID(153910), 0x128 };
 	};
 
 	struct ExitIronSights
 	{
-	public:
 		static bool thunk(RE::PlayerCamera* a_camera, std::uint32_t a_state)
 		{
 			const auto result = func(a_camera, a_state);
@@ -132,14 +109,12 @@ namespace Handler
 		}
 
 		inline static REL::Relocation<decltype(thunk)> func;
-		inline static std::uintptr_t address{ REL::Relocation<std::uintptr_t>(REL::ID(153910), 0x231).address() };
+		inline static REL::Relocation address{ REL::ID(153910), 0x231 };
 	};
 
 	static void Install()
 	{
-		Config::Load();
-
-		if (Config::GetSingleton()->Settings.bSwitchOnDraw)
+		if (Config::Settings::bSwitchOnDraw.GetValue())
 		{
 			// avoid weaponDraw firing twice
 			RE::stl::write_thunk_call<WeaponDraw>();
@@ -148,7 +123,7 @@ namespace Handler
 			SFSE::log::info("Hooked WeaponDraw/Sheathe"sv);
 		}
 
-		if (Config::GetSingleton()->Settings.bSwitchOnAim)
+		if (Config::Settings::bSwitchOnAim.GetValue())
 		{
 			// if (!playerCamera->QCameraState(0x10)
 			//	Push/PopIronSightMode
@@ -182,6 +157,9 @@ SFSEPluginLoad(const SFSE::LoadInterface* a_sfse)
 {
 	SFSE::Init(a_sfse);
 
+	Config::Load();
+
+	SFSE::AllocTrampoline(64);
 	SFSE::GetMessagingInterface()->RegisterListener(MessageCallback);
 
 	return true;
