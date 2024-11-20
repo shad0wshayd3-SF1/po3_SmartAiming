@@ -116,7 +116,7 @@ namespace Handler
 	{
 		if (Config::Settings::bSwitchOnDraw.GetValue())
 		{
-			// avoid weaponDraw firing twice
+			// WeaponDrawHandler
 			RE::stl::write_thunk_call<WeaponDraw>();
 			RE::stl::write_vfunc<WeaponSheathe>(RE::VTABLE::WeaponSheatheHandler[0]);
 
@@ -128,6 +128,7 @@ namespace Handler
 			// if (!playerCamera->QCameraState(0x10)
 			//	Push/PopIronSightMode
 
+			// IronSightsEntered/Exited
 			RE::stl::write_thunk_call<EnterIronSights>();
 			RE::stl::write_thunk_call<ExitIronSights>();
 
