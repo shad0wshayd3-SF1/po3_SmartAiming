@@ -6,7 +6,7 @@ includes("lib/commonlibsf")
 
 -- set project
 set_project("po3_SmartAiming")
-set_version("3.0.0")
+set_version("4.0.0")
 set_license("GPL-3.0")
 
 -- set defaults
@@ -22,7 +22,7 @@ set_policy("build.optimization.lto", true)
 set_policy("package.requires_lock", true)
 
 -- set config
-set_config("rex_ini", true)
+set_config("commonlib_ini", true)
 
 -- setup targets
 target("po3_SmartAiming")
@@ -32,7 +32,7 @@ target("po3_SmartAiming")
     -- add commonlibsf plugin
     add_rules("commonlibsf.plugin", {
         name = "po3_SmartAiming",
-        author = "shad0wshayd3"
+        author = "powerofthree"
     })
 
     -- add source files
